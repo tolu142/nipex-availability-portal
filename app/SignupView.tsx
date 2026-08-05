@@ -11,10 +11,11 @@ interface SignupViewProps {
 export default function SignupView({ onBack, onSignupSuccess }: SignupViewProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(''); // Added field for password input
+  const [password, setPassword] = useState(''); 
   const [role, setRole] = useState<UserRole>('Intern');
   const [staffSubRole, setStaffSubRole] = useState('Market Systems Analyst');
-  const [department, setDepartment] = useState('Information Technology');
+  // Updated initial department to match database constraint ('IT', 'JQS', 'CRM', 'Services')
+  const [department, setDepartment] = useState('IT'); 
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -62,18 +63,19 @@ export default function SignupView({ onBack, onSignupSuccess }: SignupViewProps)
           </div>
 
           <div>
-  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: '#475569' }}>
-    Create Password
-  </label>
-  <input 
-    type="password" 
-    placeholder="Choose a secure password" 
-    value={password} 
-    onChange={(e) => setPassword(e.target.value)} 
-    required 
-    style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', color: '#090d16' }} 
-  />
-</div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: '#475569' }}>
+              Create Password
+            </label>
+            <input 
+              type="password" 
+              placeholder="Choose a secure password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+              style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', color: '#090d16' }} 
+            />
+          </div>
+
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: '#475569' }}>Primary Structural Tier Group</label>
             <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', boxSizing: 'border-box', color: '#090d16' }}>
@@ -99,9 +101,21 @@ export default function SignupView({ onBack, onSignupSuccess }: SignupViewProps)
             </div>
           )}
 
+          {/* Department Selection Dropdown */}
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: '#475569' }}>Department Assigned Unit</label>
-            <input type="text" value={department} onChange={(e) => setDepartment(e.target.value)} required style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', color: '#090d16' }} />
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px', color: '#475569' }}>Department Unit</label>
+            <select 
+              value={department} 
+              onChange={(e) => setDepartment(e.target.value)} 
+              required 
+              style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', boxSizing: 'border-box', color: '#090d16' }}
+            >
+              <option value="IT">IT (Information Technology)</option>
+              <option value="JQS">JQS (Joint Qualification System)</option>
+              <option value="CRM">CRM (Customer Relationship Management)</option>
+              <option value="Services">Services</option>
+              <option value="HON office">HON office</option>
+            </select>
           </div>
 
           <button type="submit" disabled={isLoading} style={{ backgroundColor: '#005A1A', color: '#ffffff', border: 'none', padding: '14px', borderRadius: '8px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', marginTop: '10px', opacity: isLoading ? 0.6 : 1 }}>

@@ -18,6 +18,15 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Utility to get current Monday's date string (YYYY-MM-DD)
+function getCurrentWeekStart(): string {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+  const monday = new Date(now.setDate(diff));
+  return monday.toISOString().split('T')[0];
+}
+
 export async function POST(request: Request) {
   try {
     const { fullName, email, password, role, staffSubRole, department } = await request.json();
@@ -35,7 +44,7 @@ export async function POST(request: Request) {
     // 1. Generate a unique, secure verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    // 2. Write to 'users' table with is_verified = FALSE and store the token
+    // 2. Write to 'users' table with is_verified = FALSE and store the token & department
     const userInsertResult = await query(
       `INSERT INTO users (name, email, password_hash, role, specific_title, department, is_verified, verification_token) 
        VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7) RETURNING user_id, name, email`,
@@ -44,14 +53,17 @@ export async function POST(request: Request) {
 
     const newUser = userInsertResult.rows[0];
 
-    // Seed empty default weekly schedule
+    // 3. Seed empty default weekly schedule tied to the current week_start_date
+    const currentWeekStart = getCurrentWeekStart();
+    
     await query(
-      `INSERT INTO weekly_schedules (user_id, mon, tue, wed, thu, fri) 
-       VALUES ($1, 'On-Site', 'On-Site', 'On-Site', 'On-Site', 'On-Site')`,
-      [newUser.user_id]
+      `INSERT INTO weekly_schedules (user_id, week_start_date, mon, tue, wed, thu, fri) 
+       VALUES ($1, $2, 'On-Site', 'On-Site', 'On-Site', 'On-Site', 'On-Site')
+       ON CONFLICT (user_id, week_start_date) DO NOTHING`,
+      [newUser.user_id, currentWeekStart]
     );
 
-    // 3. Send the Verification Email
+    // 4. Send the Verification Email
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const verificationLink = `${appUrl}/api/auth/verify?token=${verificationToken}`;
 
